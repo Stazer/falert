@@ -1,0 +1,13 @@
+language: minimal
+
+services:
+    - docker
+
+before_install:
+    - docker build -t falert/ci -f Dockerfile.ci .
+
+script:
+    - docker run falert/ci /bin/sh -c "cd /home/user/repository && npm run lint"
+    - docker run falert/ci /bin/sh -c "cd /home/user/repository && . .python3-environment/bin/activate && mypy falert/backend"
+    - docker run falert/ci /bin/sh -c "cd /home/user/repository && . .python3-environment/bin/activate && pylint falert/backend"
+    - docker run falert/ci /bin/sh -c "cd /home/user/repository && . .python3-environment/bin/activate && black --check falert/backend"

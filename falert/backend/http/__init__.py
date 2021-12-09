@@ -13,10 +13,10 @@ class Application(BaseApplication):
         super().__init__()
 
         self.__sanic = Sanic(
-            name='falert.backend.http',
+            name="falert.backend.http",
         )
 
-        self.__sanic.add_route(PingView.as_view(), '/ping')
+        self.__sanic.add_route(PingView.as_view(), "/ping")
 
     def main(self):
         self.__sanic.run()
