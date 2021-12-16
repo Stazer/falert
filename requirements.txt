@@ -23,6 +23,7 @@ rich==10.15.2
 sanic==21.9.3
 sanic-routing==0.7.2
 SQLAlchemy==1.4.27
+sqlalchemy2-stubs==0.0.2a19
 toml==0.10.2
 tomli==1.2.2
 typing_extensions==4.0.1
