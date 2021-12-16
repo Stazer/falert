@@ -8,6 +8,6 @@ class BaseView(HTTPMethodView):
 
 
 class PingView(BaseView):
-    # pylint: disable=no-self-use
-    def get(self, _request: Request) -> HTTPResponse:
+    @staticmethod
+    def get(_request: Request) -> HTTPResponse:
         return text("pong")
