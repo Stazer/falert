@@ -15,7 +15,7 @@ class ForestEntity(BaseEntity):
 
     name = Column(Text)
 
-    vertices: List[ForestVertexEntity] = relationship(
+    vertices: List['ForestVertexEntity'] = relationship(
         "ForestVertexEntity",
         back_populates="forest",
     )
@@ -30,7 +30,7 @@ class ForestVertexEntity(BaseEntity):
     id: UUID = Column(PGUUID(as_uuid=False), primary_key=True, default=uuid4)
 
     forest_id: UUID = Column(PGUUID(as_uuid=False), ForeignKey("forest.id"))
-    forest: ForestEntity = relationship(
+    forest: 'ForestEntity' = relationship(
         "ForestEntity",
         back_populates="vertices",
     )
