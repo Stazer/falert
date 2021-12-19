@@ -1,11 +1,14 @@
 const config = {
-    content: ['./src/**/*.{html,js,svelte,ts}'],
+    mode: 'jit',
+    content: ['./falert/frontend/**/*.{html,js,svelte,ts}'],
 
     theme: {
         extend: {},
     },
 
-    plugins: [],
+    plugins: [
+        require('daisyui'),
+    ],
 };
 
 module.exports = config;
