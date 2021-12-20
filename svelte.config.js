@@ -16,6 +16,14 @@ const config = {
             routes: 'falert/frontend/routes',
             serviceWorker: 'falert/frontend/service-worker',
         },
+
+        vite: {
+            server: {
+                fs: {
+                    allow: ['falert/frontend'],
+                }
+            }
+        }
     },
 
     preprocess: [
