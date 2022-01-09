@@ -6,7 +6,9 @@ module.exports = {
     parserOptions: {
         sourceType: 'module',
         ecmaVersion: 2019,
+        allowImportExportEverywhere: true,
     },
+    parser: 'babel-eslint',
     env: {
         browser: true,
         es2017: true,
