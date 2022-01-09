@@ -21,10 +21,10 @@ class AttachDatabaseMiddleware(BaseMiddleware):
         )
 
         async with session_maker() as session:
-            request.ctx.database = session
+            request.ctx.database_session = session
 
 
 class DetachDatabaseMiddleware(BaseMiddleware):
     async def __call__(self, request: Request, _response: HTTPResponse):
-        if hasattr(request.ctx, "database"):
-            await request.ctx.database.close()
+        if hasattr(request.ctx, "database_session"):
+            await request.ctx.database_session.close()
