@@ -13,7 +13,7 @@ const config = {
             assets: 'falert/frontend/static',
             hooks: 'falert/frontend/hooks',
             lib: 'falert/frontend/lib',
-            routes: 'falert/frontend/routes',
+            routes: 'falert/frontend/route',
             serviceWorker: 'falert/frontend/service-worker',
         },
 
