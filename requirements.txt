@@ -28,7 +28,7 @@ sqlalchemy2-stubs==0.0.2a19
 toml==0.10.2
 tomli==1.2.2
 typing_extensions==4.0.1
-ujson==4.3.0
+ujson==5.1.0
 uvloop==0.16.0
 websockets==10.1
 wrapt==1.13.3
