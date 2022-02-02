@@ -1,7 +1,7 @@
 from typing import List, Any
 import uuid
 
-from sqlalchemy import Column, DateTime, Float, Text, ForeignKey, func
+from sqlalchemy import Column, DateTime, Float, ForeignKey, func
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import declarative_base, relationship
 from sqlalchemy.types import TypeDecorator, CHAR
