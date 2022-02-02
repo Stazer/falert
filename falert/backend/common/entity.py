@@ -51,37 +51,6 @@ class UUID(TypeDecorator):
 BaseEntity = declarative_base()
 
 
-class ForestEntity(BaseEntity):
-    __tablename__ = "forests"
-
-    id: UUID = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
-
-    name = Column(Text)
-
-    vertices: List["ForestVertexEntity"] = relationship(
-        "ForestVertexEntity",
-        back_populates="forest",
-    )
-
-    created = Column(DateTime, server_default=func.now(), nullable=False)
-    updated = Column(DateTime, onupdate=func.now(), nullable=False)
-
-
-class ForestVertexEntity(BaseEntity):
-    __tablename__ = "forest_vertices"
-
-    id: UUID = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
-
-    forest_id: UUID = Column(UUID(as_uuid=False), ForeignKey("forests.id"))
-    forest: "ForestEntity" = relationship(
-        "ForestEntity",
-        back_populates="vertices",
-    )
-
-    latitude: float = Column(Float)
-    longitude: float = Column(Float)
-
-
 class SubscriptionEntity(BaseEntity):
     __tablename__ = "subscriptions"
 
