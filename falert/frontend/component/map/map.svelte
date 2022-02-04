@@ -48,12 +48,9 @@
             }
 
             polygon.handle = leaflet.polygon(
-                Array.from(
-                    polygon.vertices.values(),
-                    (vertex) => {
-                        return [vertex.latitude, vertex.longitude];
-                    }
-                ),
+                Array.from(polygon.vertices.values(), (vertex) => {
+                    return [vertex.latitude, vertex.longitude];
+                }),
                 {
                     color: polygon.color,
                 },
