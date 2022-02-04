@@ -1,28 +1,36 @@
 <script>
-    import { getContext, setContext, onMount } from 'svelte';
+    import { getContext, setContext, onDestroy, onMount } from 'svelte';
 
     import { key as mapKey } from './map-context.js';
     import { key as mapPolygonKey } from './map-polygon-context.js';
 
     export let color = 'blue';
 
-    const vertices = [];
+    const symbol = Symbol();
+    const vertices = new Map();
+    const { setPolygon, deletePolygon, updatePolygon } = getContext(mapKey);
 
-    const addVertex = (longitude, latitude) => {
-        vertices.push({
-            longitude,
-            latitude,
-        });
+    const setVertex = (symbol, vertex) => {
+        vertices.set(symbol, vertex);
+        updatePolygon(symbol);
     };
 
-    const { addPolygon } = getContext(mapKey);
+    const deleteVertex = (symbol) => {
+        vertices.delete(symbol);
+        updatePolygon(symbol);
+    };
 
     setContext(mapPolygonKey, {
-        addVertex,
+        setVertex,
+        deleteVertex,
     });
 
     onMount(() => {
-        addPolygon({ vertices, color });
+        setPolygon(symbol, { vertices, color });
+    });
+
+    onDestroy(() => {
+        deletePolygon(symbol);
     });
 </script>
 

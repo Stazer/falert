@@ -1,14 +1,22 @@
 <script>
-    import { getContext, onMount } from 'svelte';
+    import { getContext, onDestroy, onMount } from 'svelte';
 
     import { key } from './map-polygon-context.js';
 
-    const { addVertex } = getContext(key);
+    const { setVertex, deleteVertex } = getContext(key);
+    const symbol = Symbol();
 
     export let longitude;
     export let latitude;
 
     onMount(() => {
-        addVertex(longitude, latitude);
+        setVertex(symbol, {
+            longitude,
+            latitude,
+        });
+    });
+
+    onDestroy(() => {
+        deleteVertex(symbol);
     });
 </script>

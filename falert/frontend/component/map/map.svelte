@@ -1,5 +1,5 @@
 <script>
-    import { createEventDispatcher, onMount, setContext } from 'svelte';
+    import { beforeUpdate, afterUpdate, createEventDispatcher, onMount, setContext } from 'svelte';
     import { browser } from '$app/env';
 
     import { key } from './map-context.js';
@@ -10,28 +10,76 @@
 
     const dispatch = createEventDispatcher();
 
-    const polygons = [];
+    let polygons = new Map();
 
-    const addPolygon = (polygon) => {
-        polygons.push(polygon);
+    let map = null;
+    let leaflet = null;
+
+    const setPolygon = (symbol, polygon) => {
+        polygons.set(symbol, {
+            ...polygon,
+            handle: null,
+        });
+    };
+
+    const deletePolygon = (symbol) => {
+        polygons.delete(symbol);
+    };
+
+    const updatePolygon = (symbol) => {
+        updatePolygons();
     };
 
     const onClick = (event) => {
         dispatch('click', {
-            longitude: event.latlng[0],
-            latitude: event.latlng[1],
+            longitude: event.latlng.lng,
+            latitude: event.latlng.lat,
+        });
+    };
+
+    const updatePolygons = () => {
+        if (leaflet === null || map === null) {
+            return;
+        }
+
+        polygons.forEach((polygon) => {
+            if (polygon.handle !== null) {
+                polygon.handle.removeFrom(map);
+            }
+
+            polygon.handle = leaflet.polygon(
+                Array.from(
+                    polygon.vertices.values(),
+                    (vertex) => {
+                        return [vertex.latitude, vertex.longitude];
+                    }
+                ),
+                {
+                    color: polygon.color,
+                },
+            );
+
+            if (polygon.handle !== null) {
+                polygon.handle.addTo(map);
+            }
         });
     };
 
     setContext(key, {
-        addPolygon,
+        setPolygon,
+        deletePolygon,
+        updatePolygon,
     });
 
     onMount(async () => {
         if (browser) {
-            const leaflet = await import('leaflet');
+            if (leaflet === null) {
+                leaflet = await import('leaflet');
+            }
 
-            const map = leaflet.map('map').setView([longitude, latitude], zoom);
+            if (map === null) {
+                map = leaflet.map('map').setView([latitude, longitude], zoom);
+            }
 
             leaflet
                 .tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -40,22 +88,21 @@
                 })
                 .addTo(map);
 
-            polygons
-                .map((polygon) => {
-                    return leaflet.polygon(
-                        polygon.vertices.map((vertex) => {
-                            return [vertex.longitude, vertex.latitude];
-                        }),
-                        {
-                            color: polygon.color,
-                        },
-                    );
-                })
-                .forEach((polygon) => {
-                    polygon.addTo(map);
-                });
+            updatePolygons();
 
             map.on('click', onClick);
+        }
+    });
+
+    beforeUpdate(() => {
+        if (browser) {
+            updatePolygons();
+        }
+    });
+
+    afterUpdate(() => {
+        if (browser) {
+            updatePolygons();
         }
     });
 </script>
