@@ -26,7 +26,7 @@
         polygons.delete(symbol);
     };
 
-    const updatePolygon = (symbol) => {
+    const updatePolygon = () => {
         updatePolygons();
     };
 

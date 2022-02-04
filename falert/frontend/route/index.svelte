@@ -53,10 +53,8 @@
                 <ul class="menu border bg-base-100 rounded-box">
                     {#each selectedVertices as vertex}
                         <li>
-                            <a>
-                                <div class="kbd mx-2">{vertex.longitude.toFixed(2)} lng</div>
-                                <div class="kbd mx-2">{vertex.latitude.toFixed(2)} lat</div>
-                            </a>
+                            <div class="kbd mx-2">{vertex.longitude.toFixed(2)} lng</div>
+                            <div class="kbd mx-2">{vertex.latitude.toFixed(2)} lat</div>
                         </li>
                     {/each}
                 </ul>
