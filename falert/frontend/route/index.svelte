@@ -34,8 +34,8 @@
     };
 
     const onClickSubmit = () => {
-        fetch("http://localhost:8000/subscriptions", {
-            method: "POST",
+        fetch('http://localhost:8000/subscriptions', {
+            method: 'POST',
             body: JSON.stringify({
                 vertices: selectedVertices,
             }),
