@@ -50,7 +50,7 @@ class Application(BaseApplication):
         )
 
         self.__sanic = Sanic(
-            name="falert.backend.http",
+            name="falert-backend-http",
         )
 
         self.__register_listeners()
