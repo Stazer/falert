@@ -32,6 +32,18 @@
 
         selectedVertices = selectedVertices;
     };
+
+    const onClickSubmit = () => {
+        fetch("http://localhost:8000/subscriptions", {
+            method: "POST",
+            body: JSON.stringify({
+                vertices: selectedVertices,
+            }),
+        }).then(() => {
+            selectedVertices = [];
+            createSubscriptionOpen = false;
+        });
+    };
 </script>
 
 <div class="navbar shadow-lg bg-neutral text-neutral-content">
@@ -60,7 +72,7 @@
                 </ul>
             {/if}
             <div class="flex justify-center py-4">
-                <div class="btn btn-ghost" on:click={onClickCancel}>Submit</div>
+                <div class="btn btn-ghost" on:click={onClickSubmit}>Submit</div>
                 <div class="btn btn-ghost" on:click={onClickCancel}>Cancel</div>
                 <div class="btn btn-ghost" on:click={onClickReset}>Reset</div>
             </div>

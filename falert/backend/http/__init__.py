@@ -1,5 +1,6 @@
 from sanic import Sanic
 from sanic.response import HTTPResponse
+from sanic_ext import Extend
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from falert.backend.common.application import BaseApplication
@@ -52,6 +53,10 @@ class Application(BaseApplication):
         self.__sanic = Sanic(
             name="falert-backend-http",
         )
+
+        self.__sanic.config.CORS_ORIGINS = "*"
+        self.__sanic.config.CORS_SEND_WILDCARD = True
+        Extend(self.__sanic)
 
         self.__register_listeners()
         self.__register_middlewares()
