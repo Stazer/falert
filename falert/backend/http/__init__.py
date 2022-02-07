@@ -1,9 +1,9 @@
 from sanic import Sanic
 from sanic.response import HTTPResponse
 from sanic_ext import Extend
-from sqlalchemy.ext.asyncio import create_async_engine
 
 from falert.backend.common.application import BaseApplication
+from falert.backend.common.database import create_engine
 from falert.backend.http.view import PingView, SubscriptionCreateView
 from falert.backend.http.middleware import (
     AttachDatabaseMiddleware,
@@ -45,10 +45,7 @@ class Application(BaseApplication):
     def __init__(self):
         super().__init__()
 
-        self.__engine = create_async_engine(
-            "sqlite+aiosqlite:///database.db",
-            echo=True,
-        )
+        self.__engine = create_engine()
 
         self.__sanic = Sanic(
             name="falert-backend-http",
