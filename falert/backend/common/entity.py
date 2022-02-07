@@ -1,7 +1,7 @@
 from typing import List, Any
 import uuid
 
-from sqlalchemy import Column, DateTime, Float, ForeignKey, func
+from sqlalchemy import Column, DateTime, Float, ForeignKey, func, JSON, Text
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import declarative_base, relationship
 from sqlalchemy.types import TypeDecorator, CHAR
@@ -80,3 +80,46 @@ class SubscriptionVertexEntity(BaseEntity):
 
     latitude: float = Column(Float)
     longitude: float = Column(Float)
+
+
+class DatasetEntity(BaseEntity):
+    __tablename__ = "datasets"
+
+    id: UUID = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    url: str = Column(Text, nullable=False, index=True, unique=True)
+
+    fire_locations: List["FireLocationEntity"] = relationship(
+        "FireLocationEntity", back_populates="dataset"
+    )
+
+    created = Column(DateTime, server_default=func.now(), nullable=False)
+    updated = Column(
+        DateTime, server_default=func.now(), onupdate=func.now(), nullable=False
+    )
+
+
+class FireLocationEntity(BaseEntity):
+    __tablename__ = "fire_locations"
+
+    id: UUID = Column(
+        UUID(as_uuid=False),
+        primary_key=True,
+        default=uuid.uuid4,
+    )
+
+    dataset_id: UUID = Column(UUID(as_uuid=False), ForeignKey("datasets.id"))
+    dataset: "DatasetEntity" = relationship(
+        "DatasetEntity", back_populates="fire_locations"
+    )
+
+    latitude: float = Column(Float, nullable=False)
+    longitude: float = Column(Float, nullable=False)
+
+    raw = Column(JSON, nullable=True)
+
+    acquired = Column(DateTime, nullable=False)
+
+    created = Column(DateTime, server_default=func.now(), nullable=False)
+    updated = Column(
+        DateTime, server_default=func.now(), onupdate=func.now(), nullable=False
+    )
