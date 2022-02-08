@@ -4,7 +4,7 @@ from tempfile import NamedTemporaryFile
 from aiohttp import ClientSession
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, selectinload
 
 from falert.backend.common.application import AsynchronousApplication
 from falert.backend.common.database import create_engine
@@ -41,15 +41,31 @@ class NASAHarvester(BaseHarvester):
 
         async with session_maker() as database_session:
             result = await database_session.execute(
-                select(DatasetEntity).where(DatasetEntity.url == self.url),
+                select(DatasetEntity)
+                .where(DatasetEntity.url == self.url)
+                .options(selectinload(DatasetEntity.fire_locations)),
             )
 
             dataset_entity = result.fetchone()
+            reported_fire_locations = {}
 
             if dataset_entity is None:
                 dataset_entity = DatasetEntity(url=self.url)
             else:
                 dataset_entity = dataset_entity[0]
+                reported_fire_locations = dict(
+                    map(
+                        lambda fire_location: (
+                            (
+                                fire_location.latitude,
+                                fire_location.longitude,
+                                fire_location.acquired,
+                            ),
+                            fire_location,
+                        ),
+                        dataset_entity.fire_locations,
+                    )
+                )
 
             async with ClientSession() as client_session:
                 async with client_session.get(self.url) as response:
@@ -67,14 +83,19 @@ class NASAHarvester(BaseHarvester):
                             for row in reader:
                                 fire_location_input = NASAFireLocationInput.decode(row)
 
-                                dataset_entity.fire_locations.append(
-                                    FireLocationEntity(
-                                        latitude=fire_location_input.latitude,
-                                        longitude=fire_location_input.longitude,
-                                        raw=row,
-                                        acquired=fire_location_input.acquired,
+                                if (
+                                    fire_location_input.latitude,
+                                    fire_location_input.longitude,
+                                    fire_location_input.acquired,
+                                ) not in reported_fire_locations:
+                                    dataset_entity.fire_locations.append(
+                                        FireLocationEntity(
+                                            latitude=fire_location_input.latitude,
+                                            longitude=fire_location_input.longitude,
+                                            raw=row,
+                                            acquired=fire_location_input.acquired,
+                                        )
                                     )
-                                )
 
             database_session.add(dataset_entity)
             await database_session.commit()
