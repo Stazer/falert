@@ -28,10 +28,10 @@ class SubscriptionVertexInputSchema(Schema):
     longitude = fields.Float(required=True)
     latitude = fields.Float(required=True)
 
+    # pylint: disable=no-self-use
     @post_load
-    @staticmethod
     def _on_post_load(
-        _schema: Schema, values: Mapping[str, Any], **_kwargs
+        self, _schema: Schema, values: Mapping[str, Any], **_kwargs
     ) -> SubscriptionVertexInput:
         return SubscriptionVertexInput(**values)
 
@@ -50,10 +50,10 @@ class SubscriptionInput(BaseInput):
 class SubscriptionInputSchema(Schema):
     vertices = fields.List(fields.Nested(SubscriptionVertexInputSchema, required=True))
 
+    # pylint: disable=no-self-use
     @post_load
-    @staticmethod
     def _on_post_load(
-        _schema: Schema, values: Mapping[str, Any], **_kwargs
+        self, _schema: Schema, values: Mapping[str, Any], **_kwargs
     ) -> SubscriptionInput:
         return SubscriptionInput(**values)
 
@@ -179,9 +179,9 @@ class NASAFireLocationInputSchema(Schema):
     frp = fields.Float(required=True)
     daynight = fields.Str(required=True)
 
+    # pylint: disable=no-self-use
     @post_load
-    @staticmethod
     def _on_post_load(
-        _schema: Schema, values: Mapping[str, Any], **_kwargs
+        self, _schema: Schema, values: Mapping[str, Any], **_kwargs
     ) -> NASAFireLocationInput:
         return NASAFireLocationInput(**values)
