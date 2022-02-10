@@ -9,7 +9,7 @@ from sqlalchemy.orm import sessionmaker, selectinload
 from falert.backend.common.application import AsynchronousApplication
 from falert.backend.common.database import create_engine
 from falert.backend.common.entity import BaseEntity, DatasetEntity, FireLocationEntity
-from falert.backend.common.input import NASAFireLocationInput
+from falert.backend.common.input import NASAFireLocationInputSchema
 
 
 class BaseHarvester:
@@ -81,7 +81,9 @@ class NASAHarvester(BaseHarvester):
                             reader = DictReader(read_file)
 
                             for row in reader:
-                                fire_location_input = NASAFireLocationInput.decode(row)
+                                fire_location_input = (
+                                    NASAFireLocationInputSchema().load(row)
+                                )
 
                                 if (
                                     fire_location_input.latitude,

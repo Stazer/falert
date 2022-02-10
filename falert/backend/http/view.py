@@ -1,8 +1,10 @@
+from json import loads
+
 from sanic.views import HTTPMethodView
 from sanic.request import Request
 from sanic.response import text, HTTPResponse, empty
 
-from falert.backend.common.input import SubscriptionInput
+from falert.backend.common.input import SubscriptionInputSchema
 from falert.backend.common.entity import SubscriptionEntity, SubscriptionVertexEntity
 
 
@@ -19,7 +21,7 @@ class PingView(BaseView):
 class SubscriptionCreateView(BaseView):
     @staticmethod
     async def post(request: Request) -> HTTPResponse:
-        subscription_input = SubscriptionInput.decode_json(request.body)
+        subscription_input = SubscriptionInputSchema().load(loads(request.body))
         subscription_entity = SubscriptionEntity()
 
         for vertex in subscription_input.vertices:

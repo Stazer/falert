@@ -1,46 +1,14 @@
-from typing import List, Union, Any, Dict, Optional
-from json import loads
+from typing import List, Any, Optional, Mapping
 from datetime import datetime
 
 from marshmallow import Schema, fields, post_load
 
 
 class BaseInput:
-    @staticmethod
-    def on_post_load(schema, values, **_kwargs) -> "BaseInput":
-        return schema.constructor(**values)
-
-    @classmethod
-    def schema(cls) -> Dict[Any, Any]:
-        return {
-            "constructor": cls,
-            "on_post_load": post_load(cls.on_post_load),
-        }
-
-    @classmethod
-    def decode(cls, source: Dict[Any, Any]) -> "BaseInput":
-        schema = Schema.from_dict(
-            {
-                **cls.schema(),
-            }
-        )()
-
-        return schema.load(source)
-
-    @classmethod
-    def decode_json(cls, source: Union[str, bytes]):
-        return cls.decode(loads(source))
+    pass
 
 
 class SubscriptionVertexInput(BaseInput):
-    @classmethod
-    def schema(cls) -> Dict[Any, Any]:
-        return {
-            **super().schema(),
-            "longitude": fields.Float(required=True),
-            "latitude": fields.Float(required=True),
-        }
-
     def __init__(self, longitude: float, latitude: float) -> None:
         super().__init__()
 
@@ -56,18 +24,19 @@ class SubscriptionVertexInput(BaseInput):
         return self.__latitude
 
 
-class SubscriptionInput(BaseInput):
-    @classmethod
-    def schema(cls) -> Dict[Any, Any]:
-        return {
-            **super().schema(),
-            "vertices": fields.List(
-                fields.Nested(
-                    Schema.from_dict(SubscriptionVertexInput.schema())(), required=True
-                )
-            ),
-        }
+class SubscriptionVertexInputSchema(Schema):
+    longitude = fields.Float(required=True)
+    latitude = fields.Float(required=True)
 
+    @post_load
+    @staticmethod
+    def _on_post_load(
+        _schema: Schema, values: Mapping[str, Any], **_kwargs
+    ) -> SubscriptionVertexInput:
+        return SubscriptionVertexInput(**values)
+
+
+class SubscriptionInput(BaseInput):
     def __init__(self, vertices: List["SubscriptionVertexInput"]) -> None:
         super().__init__()
 
@@ -78,29 +47,19 @@ class SubscriptionInput(BaseInput):
         return self.__vertices
 
 
+class SubscriptionInputSchema(Schema):
+    vertices = fields.List(fields.Nested(SubscriptionVertexInputSchema, required=True))
+
+    @post_load
+    @staticmethod
+    def _on_post_load(
+        _schema: Schema, values: Mapping[str, Any], **_kwargs
+    ) -> SubscriptionInput:
+        return SubscriptionInput(**values)
+
+
 # pylint: disable=too-many-instance-attributes
 class NASAFireLocationInput(BaseInput):
-    @classmethod
-    def schema(cls) -> Dict[Any, Any]:
-        return {
-            **super().schema(),
-            "latitude": fields.Float(required=True),
-            "longitude": fields.Float(required=True),
-            "brightness": fields.Float(),
-            "scan": fields.Float(required=True),
-            "track": fields.Float(required=True),
-            "acq_date": fields.Str(required=True),
-            "acq_time": fields.Str(required=True),
-            "satellite": fields.Str(required=True),
-            "confidence": fields.Raw(),
-            "version": fields.Str(required=True),
-            "bright_t31": fields.Float(),
-            "bright_ti4": fields.Float(),
-            "bright_ti5": fields.Float(),
-            "frp": fields.Float(required=True),
-            "daynight": fields.Str(required=True),
-        }
-
     # pylint: disable=too-many-arguments, too-many-locals
     def __init__(
         self,
@@ -201,3 +160,28 @@ class NASAFireLocationInput(BaseInput):
     @property
     def acquired(self) -> datetime:
         return datetime.strptime(f"{self.acq_date} {self.acq_time}", "%Y-%m-%d %H%M")
+
+
+class NASAFireLocationInputSchema(Schema):
+    latitude = fields.Float(required=True)
+    longitude = fields.Float(required=True)
+    brightness = fields.Float()
+    scan = fields.Float(required=True)
+    track = fields.Float(required=True)
+    acq_date = fields.Str(required=True)
+    acq_time = fields.Str(required=True)
+    satellite = fields.Str(required=True)
+    confidence = fields.Raw()
+    version = fields.Str(required=True)
+    bright_t31 = fields.Float()
+    bright_ti4 = fields.Float()
+    bright_ti5 = fields.Float()
+    frp = fields.Float(required=True)
+    daynight = fields.Str(required=True)
+
+    @post_load
+    @staticmethod
+    def _on_post_load(
+        _schema: Schema, values: Mapping[str, Any], **_kwargs
+    ) -> NASAFireLocationInput:
+        return NASAFireLocationInput(**values)
