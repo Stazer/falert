@@ -31,7 +31,7 @@ class SubscriptionVertexInputSchema(Schema):
     # pylint: disable=no-self-use
     @post_load
     def _on_post_load(
-        self, _schema: Schema, values: Mapping[str, Any], **_kwargs
+        self, values: Mapping[str, Any], **_kwargs
     ) -> SubscriptionVertexInput:
         return SubscriptionVertexInput(**values)
 
@@ -53,7 +53,7 @@ class SubscriptionInputSchema(Schema):
     # pylint: disable=no-self-use
     @post_load
     def _on_post_load(
-        self, _schema: Schema, values: Mapping[str, Any], **_kwargs
+        self, values: Mapping[str, Any], **_kwargs
     ) -> SubscriptionInput:
         return SubscriptionInput(**values)
 
@@ -182,6 +182,6 @@ class NASAFireLocationInputSchema(Schema):
     # pylint: disable=no-self-use
     @post_load
     def _on_post_load(
-        self, _schema: Schema, values: Mapping[str, Any], **_kwargs
+        self, values: Mapping[str, Any], **_kwargs
     ) -> NASAFireLocationInput:
         return NASAFireLocationInput(**values)
