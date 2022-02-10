@@ -52,9 +52,7 @@ class SubscriptionInputSchema(Schema):
 
     # pylint: disable=no-self-use
     @post_load
-    def _on_post_load(
-        self, values: Mapping[str, Any], **_kwargs
-    ) -> SubscriptionInput:
+    def _on_post_load(self, values: Mapping[str, Any], **_kwargs) -> SubscriptionInput:
         return SubscriptionInput(**values)
 
 
