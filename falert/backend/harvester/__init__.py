@@ -1,4 +1,5 @@
 from csv import DictReader
+from asyncio import gather
 from tempfile import NamedTemporaryFile
 
 from aiohttp import ClientSession
@@ -137,6 +138,8 @@ class Application(AsynchronousApplication):
             "https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_Global_24h.csv",
         )
 
-        await harvester0.run()
-        await harvester1.run()
-        await harvester2.run()
+        await gather(
+            harvester0.run(),
+            harvester1.run(),
+            harvester2.run(),
+        )
