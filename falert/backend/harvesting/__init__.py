@@ -7,7 +7,6 @@ from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 from sqlalchemy.orm import sessionmaker, selectinload
 
 from falert.backend.common.application import AsynchronousApplication
-from falert.backend.common.database import create_engine
 from falert.backend.common.entity import BaseEntity, DatasetEntity, FireLocationEntity
 from falert.backend.common.input import NASAFireLocationInputSchema
 
@@ -104,27 +103,24 @@ class NASAHarvester(BaseHarvester):
 
 
 class Application(AsynchronousApplication):
-    def __init__(self) -> None:
-        self.__engine = create_engine()
-
     async def main(self):
-        async with self.__engine.begin() as connection:
-            await connection.run_sync(BaseEntity.metadata.create_all)
+        # async with self._engine.begin() as connection:
+        #    await connection.run_sync(BaseEntity.metadata.create_all)
 
         harvester0 = NASAHarvester(
-            self.__engine,
+            self._engine,
             # pylint: disable=line-too-long
             "https://firms.modaps.eosdis.nasa.gov/data/active_fire/modis-c6.1/csv/MODIS_C6_1_Global_24h.csv",
         )
 
         harvester1 = NASAHarvester(
-            self.__engine,
+            self._engine,
             # pylint: disable=line-too-long
             "https://firms.modaps.eosdis.nasa.gov/data/active_fire/suomi-npp-viirs-c2/csv/SUOMI_VIIRS_C2_Global_24h.csv",
         )
 
         harvester2 = NASAHarvester(
-            self.__engine,
+            self._engine,
             # pylint: disable=line-too-long
             "https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_Global_24h.csv",
         )

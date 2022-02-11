@@ -1,8 +1,25 @@
 from asyncio import run
+from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
+
+from falert.backend.common.configuration import Configuration, load_from_environment
 
 
 class BaseApplication:
-    pass
+    def __init__(self):
+        self.__configuration = load_from_environment()
+
+        self.__engine = create_async_engine(
+            self.__configuration.database_url,
+            echo=True,
+        )
+
+    @property
+    def _configuration(self) -> Configuration:
+        return self.__configuration
+
+    @property
+    def _engine(self) -> AsyncEngine:
+        return self.__engine
 
 
 class AsynchronousApplication(BaseApplication):
