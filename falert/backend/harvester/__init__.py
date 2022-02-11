@@ -9,6 +9,7 @@ from sqlalchemy.orm import sessionmaker, selectinload
 from falert.backend.common.application import AsynchronousApplication
 from falert.backend.common.entity import BaseEntity, DatasetEntity, FireLocationEntity
 from falert.backend.common.input import NASAFireLocationInputSchema
+from falert.backend.common.messenger import AsyncpgSender
 
 
 class BaseHarvester:
@@ -103,9 +104,20 @@ class NASAHarvester(BaseHarvester):
 
 
 class Application(AsynchronousApplication):
+    def __init__(self):
+        super().__init__()
+
+        # pylint: disable=unused-private-member
+        self.__sender = None
+
     async def main(self):
-        # async with self._engine.begin() as connection:
-        #    await connection.run_sync(BaseEntity.metadata.create_all)
+        async with self._engine.begin() as connection:
+            raw_connection = await connection.get_raw_connection()
+
+            # pylint: disable=unused-private-member
+            self.__sender = AsyncpgSender(
+                raw_connection.dbapi_connection.driver_connection
+            )
 
         harvester0 = NASAHarvester(
             self._engine,
