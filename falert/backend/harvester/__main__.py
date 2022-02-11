@@ -1,3 +1,3 @@
-from falert.backend.harvesting import Application
+from falert.backend.harvester import Application
 
 Application.run()
