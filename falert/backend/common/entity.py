@@ -61,6 +61,11 @@ class SubscriptionEntity(BaseEntity):
         back_populates="subscription",
     )
 
+    fire_location_matches: List["SubscriptionFireLocationMatchEntity"] = relationship(
+        "SubscriptionFireLocationMatchEntity",
+        back_populates="subscription",
+    )
+
     created = Column(DateTime, server_default=func.now(), nullable=False)
     updated = Column(
         DateTime, server_default=func.now(), onupdate=func.now(), nullable=False
@@ -80,6 +85,31 @@ class SubscriptionVertexEntity(BaseEntity):
 
     latitude: float = Column(Float)
     longitude: float = Column(Float)
+
+
+class SubscriptionFireLocationMatchEntity(BaseEntity):
+    __tablename__ = "subscription_fire_location_matches"
+
+    id: UUID = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+
+    subscription_id: UUID = Column(UUID(as_uuid=False), ForeignKey("subscriptions.id"))
+    subscription: "SubscriptionEntity" = relationship(
+        "SubscriptionEntity",
+        back_populates="fire_location_matches",
+    )
+
+    fire_location_id: UUID = Column(
+        UUID(as_uuid=False), ForeignKey("fire_locations.id")
+    )
+    fire_location: "FireLocationEntity" = relationship(
+        "FireLocationEntity",
+        back_populates="subscription_matches",
+    )
+
+    created = Column(DateTime, server_default=func.now(), nullable=False)
+    updated = Column(
+        DateTime, server_default=func.now(), onupdate=func.now(), nullable=False
+    )
 
 
 class DatasetEntity(BaseEntity):
@@ -132,6 +162,11 @@ class FireLocationEntity(BaseEntity):
     dataset_id: UUID = Column(UUID(as_uuid=False), ForeignKey("datasets.id"))
     dataset: "DatasetEntity" = relationship(
         "DatasetEntity", back_populates="fire_locations"
+    )
+
+    subscription_matches: List["SubscriptionFireLocationMatchEntity"] = relationship(
+        "SubscriptionFireLocationMatchEntity",
+        back_populates="fire_location",
     )
 
     latitude: float = Column(Float, nullable=False)
