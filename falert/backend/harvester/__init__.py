@@ -8,7 +8,12 @@ from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 from sqlalchemy.orm import sessionmaker, selectinload
 
 from falert.backend.common.application import AsynchronousApplication
-from falert.backend.common.entity import BaseEntity, DatasetEntity, FireLocationEntity
+from falert.backend.common.entity import (
+    BaseEntity,
+    DatasetEntity,
+    FireLocationEntity,
+    DatasetHarvestLogEntity,
+)
 from falert.backend.common.input import NASAFireLocationInputSchema
 from falert.backend.common.messenger import AsyncpgSender
 
@@ -44,7 +49,8 @@ class NASAHarvester(BaseHarvester):
             result = await database_session.execute(
                 select(DatasetEntity)
                 .where(DatasetEntity.url == self.url)
-                .options(selectinload(DatasetEntity.fire_locations)),
+                .options(selectinload(DatasetEntity.fire_locations))
+                .options(selectinload(DatasetEntity.harvest_logs)),
             )
 
             dataset_entity = result.fetchone()
@@ -67,6 +73,8 @@ class NASAHarvester(BaseHarvester):
                         dataset_entity.fire_locations,
                     )
                 )
+
+            added = 0
 
             async with ClientSession() as client_session:
                 async with client_session.get(self.url) as response:
@@ -99,6 +107,12 @@ class NASAHarvester(BaseHarvester):
                                             acquired=fire_location_input.acquired,
                                         )
                                     )
+
+                                    added = added + 1
+
+            dataset_entity.harvest_logs.append(
+                DatasetHarvestLogEntity(added=added),
+            )
 
             database_session.add(dataset_entity)
             await database_session.commit()

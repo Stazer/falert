@@ -1,7 +1,7 @@
 from typing import List, Any
 import uuid
 
-from sqlalchemy import Column, DateTime, Float, ForeignKey, func, JSON, Text
+from sqlalchemy import Column, DateTime, Float, ForeignKey, func, JSON, Text, Integer
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import declarative_base, relationship
 from sqlalchemy.types import TypeDecorator, CHAR
@@ -91,6 +91,28 @@ class DatasetEntity(BaseEntity):
     fire_locations: List["FireLocationEntity"] = relationship(
         "FireLocationEntity", back_populates="dataset"
     )
+
+    harvest_logs: List["DatasetHarvestLogEntity"] = relationship(
+        "DatasetHarvestLogEntity", back_populates="dataset"
+    )
+
+    created = Column(DateTime, server_default=func.now(), nullable=False)
+    updated = Column(
+        DateTime, server_default=func.now(), onupdate=func.now(), nullable=False
+    )
+
+
+class DatasetHarvestLogEntity(BaseEntity):
+    __tablename__ = "dataset_harvest_logs"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+
+    dataset_id = Column(UUID(as_uuid=False), ForeignKey("datasets.id"))
+    dataset: "DatasetEntity" = relationship(
+        "DatasetEntity", back_populates="harvest_logs"
+    )
+
+    added = Column(Integer, nullable=False)
 
     created = Column(DateTime, server_default=func.now(), nullable=False)
     updated = Column(
