@@ -25,7 +25,7 @@ class SubscriptionCreateView(BaseView):
         subscription_entity = SubscriptionEntity()
 
         for vertex in subscription_input.vertices:
-            subscription_entity.vertices.append(
+            subscription_entity.subscription_vertices.append(
                 SubscriptionVertexEntity(
                     longitude=vertex.longitude,
                     latitude=vertex.latitude,

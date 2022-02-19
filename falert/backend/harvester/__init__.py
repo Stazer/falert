@@ -50,7 +50,7 @@ class NASAHarvester(BaseHarvester):
             result = await database_session.execute(
                 select(DatasetEntity)
                 .options(
-                    joinedload(DatasetEntity.harvests).joinedload(
+                    joinedload(DatasetEntity.dataset_harvests).joinedload(
                         DatasetHarvestEntity.fire_locations
                     )
                 )
@@ -65,7 +65,7 @@ class NASAHarvester(BaseHarvester):
             else:
                 dataset_entity = dataset_entity[0]
 
-                for dataset_harvest_entity in dataset_entity.harvests:
+                for dataset_harvest_entity in dataset_entity.dataset_harvests:
                     for fire_location in dataset_harvest_entity.fire_locations:
                         reported_fire_locations[
                             (
@@ -109,7 +109,7 @@ class NASAHarvester(BaseHarvester):
                                         )
                                     )
 
-            dataset_entity.harvests.append(dataset_harvest_entity)
+            dataset_entity.dataset_harvests.append(dataset_harvest_entity)
             database_session.add(dataset_entity)
             await database_session.commit()
 
