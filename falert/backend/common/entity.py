@@ -1,7 +1,7 @@
 from typing import List, Any
 import uuid
 
-from sqlalchemy import Column, DateTime, Float, ForeignKey, func, JSON, Text, Integer
+from sqlalchemy import Column, DateTime, Float, ForeignKey, func, JSON, Text
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import declarative_base, relationship
 from sqlalchemy.types import TypeDecorator, CHAR
@@ -118,12 +118,8 @@ class DatasetEntity(BaseEntity):
     id: UUID = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
     url: str = Column(Text, nullable=False, index=True, unique=True)
 
-    fire_locations: List["FireLocationEntity"] = relationship(
-        "FireLocationEntity", back_populates="dataset"
-    )
-
-    harvest_logs: List["DatasetHarvestLogEntity"] = relationship(
-        "DatasetHarvestLogEntity", back_populates="dataset"
+    harvests: List["DatasetHarvestEntity"] = relationship(
+        "DatasetHarvestEntity", back_populates="dataset"
     )
 
     created = Column(DateTime, server_default=func.now(), nullable=False)
@@ -132,17 +128,20 @@ class DatasetEntity(BaseEntity):
     )
 
 
-class DatasetHarvestLogEntity(BaseEntity):
-    __tablename__ = "dataset_harvest_logs"
+class DatasetHarvestEntity(BaseEntity):
+    __tablename__ = "dataset_harvests"
 
-    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    id: UUID = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
 
-    dataset_id = Column(UUID(as_uuid=False), ForeignKey("datasets.id"))
+    dataset_id: UUID = Column(UUID(as_uuid=False), ForeignKey("datasets.id"))
     dataset: "DatasetEntity" = relationship(
-        "DatasetEntity", back_populates="harvest_logs"
+        "DatasetEntity",
+        back_populates="harvests",
     )
 
-    added = Column(Integer, nullable=False)
+    fire_locations: List["FireLocationEntity"] = relationship(
+        "FireLocationEntity", back_populates="dataset_harvest"
+    )
 
     created = Column(DateTime, server_default=func.now(), nullable=False)
     updated = Column(
@@ -159,16 +158,17 @@ class FireLocationEntity(BaseEntity):
         default=uuid.uuid4,
     )
 
-    dataset_id: UUID = Column(UUID(as_uuid=False), ForeignKey("datasets.id"))
-    dataset: "DatasetEntity" = relationship(
-        "DatasetEntity", back_populates="fire_locations"
+    dataset_harvest_id: UUID = Column(
+        UUID(as_uuid=False), ForeignKey("dataset_harvests.id")
+    )
+    dataset_harvest: "DatasetHarvestEntity" = relationship(
+        "DatasetHarvestEntity", back_populates="fire_locations"
     )
 
     subscription_matches: List["SubscriptionFireLocationMatchEntity"] = relationship(
         "SubscriptionFireLocationMatchEntity",
         back_populates="fire_location",
     )
-
     latitude: float = Column(Float, nullable=False)
     longitude: float = Column(Float, nullable=False)
 

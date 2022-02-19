@@ -5,14 +5,14 @@ from tempfile import NamedTemporaryFile
 from aiohttp import ClientSession
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
-from sqlalchemy.orm import sessionmaker, selectinload
+from sqlalchemy.orm import sessionmaker, joinedload
 
 from falert.backend.common.application import AsynchronousApplication
 from falert.backend.common.entity import (
     BaseEntity,
     DatasetEntity,
     FireLocationEntity,
-    DatasetHarvestLogEntity,
+    DatasetHarvestEntity,
 )
 from falert.backend.common.input import NASAFireLocationInputSchema
 from falert.backend.common.messenger import AsyncpgSender
@@ -38,6 +38,7 @@ class NASAHarvester(BaseHarvester):
     def chunk_size(self) -> int:
         return self.__chunk_size
 
+    # pylint: disable=too-many-locals
     async def run(self):
         session_maker = sessionmaker(
             self.__engine,
@@ -48,33 +49,33 @@ class NASAHarvester(BaseHarvester):
         async with session_maker() as database_session:
             result = await database_session.execute(
                 select(DatasetEntity)
+                .options(
+                    joinedload(DatasetEntity.harvests).joinedload(
+                        DatasetHarvestEntity.fire_locations
+                    )
+                )
                 .where(DatasetEntity.url == self.url)
-                .options(selectinload(DatasetEntity.fire_locations))
-                .options(selectinload(DatasetEntity.harvest_logs)),
             )
 
-            dataset_entity = result.fetchone()
+            dataset_entity = list(result.unique())[0]
             reported_fire_locations = {}
 
             if dataset_entity is None:
                 dataset_entity = DatasetEntity(url=self.url)
             else:
                 dataset_entity = dataset_entity[0]
-                reported_fire_locations = dict(
-                    map(
-                        lambda fire_location: (
+
+                for dataset_harvest_entity in dataset_entity.harvests:
+                    for fire_location in dataset_harvest_entity.fire_locations:
+                        reported_fire_locations[
                             (
                                 fire_location.latitude,
                                 fire_location.longitude,
                                 fire_location.acquired,
-                            ),
-                            fire_location,
-                        ),
-                        dataset_entity.fire_locations,
-                    )
-                )
+                            )
+                        ] = fire_location
 
-            added = 0
+            dataset_harvest_entity = DatasetHarvestEntity()
 
             async with ClientSession() as client_session:
                 async with client_session.get(self.url) as response:
@@ -99,7 +100,7 @@ class NASAHarvester(BaseHarvester):
                                     fire_location_input.longitude,
                                     fire_location_input.acquired,
                                 ) not in reported_fire_locations:
-                                    dataset_entity.fire_locations.append(
+                                    dataset_harvest_entity.fire_locations.append(
                                         FireLocationEntity(
                                             latitude=fire_location_input.latitude,
                                             longitude=fire_location_input.longitude,
@@ -108,12 +109,7 @@ class NASAHarvester(BaseHarvester):
                                         )
                                     )
 
-                                    added = added + 1
-
-            dataset_entity.harvest_logs.append(
-                DatasetHarvestLogEntity(added=added),
-            )
-
+            dataset_entity.harvests.append(dataset_harvest_entity)
             database_session.add(dataset_entity)
             await database_session.commit()
 
