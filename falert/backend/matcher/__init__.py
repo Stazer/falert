@@ -77,7 +77,7 @@ class Application(AsynchronousApplication):
             else:
                 self._logger.info(
                     "Fetch all fire locations from dataset harvests with ids %s",
-                    ', '.join(map(str, dataset_harvest_ids)),
+                    ", ".join(map(str, dataset_harvest_ids)),
                 )
 
                 fire_location_entities = list(
@@ -113,7 +113,7 @@ class Application(AsynchronousApplication):
             else:
                 self._logger.info(
                     "Fetch all subscriptions with ids %s",
-                    ', '.join(map(str, subscription_ids)),
+                    ", ".join(map(str, subscription_ids)),
                 )
 
                 subscription_entities = list(
