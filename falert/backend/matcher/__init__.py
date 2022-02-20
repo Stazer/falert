@@ -51,6 +51,8 @@ class Application(AsynchronousApplication):
         subscription_ids: Optional[List[UUID]],
         dataset_harvest_ids: Optional[List[UUID]],
     ) -> None:
+        self._logger.info("Start matching")
+
         session_maker = sessionmaker(
             self._engine,
             expire_on_commit=False,
@@ -62,6 +64,8 @@ class Application(AsynchronousApplication):
 
         async with session_maker() as database_session:
             if dataset_harvest_ids is None or len(dataset_harvest_ids) == 0:
+                self._logger.info("Fetch fire locations from the last 24 hours")
+
                 fire_location_entities = list(
                     await database_session.execute(
                         select(FireLocationEntity).where(
@@ -71,6 +75,11 @@ class Application(AsynchronousApplication):
                     )
                 )
             else:
+                self._logger.info(
+                    # pylint: disable=line-too-long
+                    "Fetch all fire locations from dataset harvests with id {','.join(dataset_harvest_ids)}"
+                )
+
                 fire_location_entities = list(
                     await database_session.execute(
                         select(FireLocationEntity).where(
@@ -82,6 +91,8 @@ class Application(AsynchronousApplication):
                 )
 
             if subscription_ids is None or len(subscription_ids) == 0:
+                self._logger.info("Fetch all subscriptions")
+
                 subscription_entities = list(
                     (
                         await database_session.execute(
@@ -100,6 +111,10 @@ class Application(AsynchronousApplication):
                     ).unique()
                 )
             else:
+                self._logger.info(
+                    "Fetch all subscriptions with id {','.join(subscription_ids)}"
+                )
+
                 subscription_entities = list(
                     (
                         await database_session.execute(
@@ -118,6 +133,12 @@ class Application(AsynchronousApplication):
                         )
                     ).unique()
                 )
+
+        self._logger.info(
+            "Match %s subscription(s) with %s fire location(s)",
+            len(subscription_entities),
+            len(fire_location_entities),
+        )
 
         for (subscription_entity,) in subscription_entities:
             async with session_maker() as database_session:
@@ -162,7 +183,16 @@ class Application(AsynchronousApplication):
                             )
                         )
 
-                        print("Match!")
+                if len(subscription_match_entity.subscription_match_fire_locations) > 0:
+                    self._logger.info(
+                        "Subscription %s has a match with %s new fire locations",
+                        subscription_entity.id,
+                        len(
+                            subscription_match_entity.subscription_match_fire_locations
+                        ),
+                    )
 
                 database_session.add(subscription_entity)
                 await database_session.commit()
+
+        self._logger.info("Finish matching")

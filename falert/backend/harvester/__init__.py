@@ -1,4 +1,5 @@
 from csv import DictReader
+from logging import Logger
 from asyncio import gather
 from tempfile import NamedTemporaryFile
 
@@ -27,23 +28,22 @@ class BaseHarvester:
 
 
 class NASAHarvester(BaseHarvester):
+    # pylint: disable=too-many-arguments
     def __init__(
-        self, engine: AsyncEngine, sender: Sender, url: str, chunk_size: int = 8192
+        self,
+        engine: AsyncEngine,
+        sender: Sender,
+        logger: Logger,
+        url: str,
+        chunk_size: int = 8192,
     ):
         super().__init__()
 
         self.__engine = engine
         self.__sender = sender
+        self.__logger = logger
         self.__url = url
         self.__chunk_size = chunk_size
-
-    @property
-    def url(self) -> str:
-        return self.__url
-
-    @property
-    def chunk_size(self) -> int:
-        return self.__chunk_size
 
     # pylint: disable=too-many-locals
     async def run(self):
@@ -61,14 +61,15 @@ class NASAHarvester(BaseHarvester):
                         DatasetHarvestEntity.fire_locations
                     )
                 )
-                .where(DatasetEntity.url == self.url)
+                .where(DatasetEntity.url == self.__url)
             )
 
             dataset_entity = list(result.unique())[0]
             reported_fire_locations = {}
 
             if dataset_entity is None:
-                dataset_entity = DatasetEntity(url=self.url)
+                self.__logger.info("Create new dataset")
+                dataset_entity = DatasetEntity(url=self.__url)
             else:
                 dataset_entity = dataset_entity[0]
 
@@ -82,17 +83,30 @@ class NASAHarvester(BaseHarvester):
                             )
                         ] = fire_location
 
+                self.__logger.info(
+                    # pylint: disable=line-too-long
+                    f"Update dataset {dataset_entity.id} with {len(reported_fire_locations)} fire locations"
+                )
+
             dataset_harvest_entity = DatasetHarvestEntity()
 
             async with ClientSession() as client_session:
-                async with client_session.get(self.url) as response:
+                self.__logger.info(
+                    f"Download {self.__url} for dataset {dataset_entity.id}"
+                )
+
+                async with client_session.get(self.__url) as response:
                     with NamedTemporaryFile() as write_file:
+                        self.__logger.info(f"Save response for url {self.__url}")
+
                         async for data in response.content.iter_chunked(
-                            self.chunk_size
+                            self.__chunk_size
                         ):
                             write_file.write(data)
 
                         write_file.flush()
+
+                        self.__logger.info(f"Read CSV data for url {self.__url}")
 
                         with open(write_file.name, "r", encoding="utf-8") as read_file:
                             reader = DictReader(read_file)
@@ -115,6 +129,11 @@ class NASAHarvester(BaseHarvester):
                                             acquired=fire_location_input.acquired,
                                         )
                                     )
+
+            self.__logger.info(
+                # pylint: disable=line-too-long
+                f"Add {len(dataset_harvest_entity.fire_locations)} new fire locations to dataset {dataset_entity.id}"
+            )
 
             dataset_entity.dataset_harvests.append(dataset_harvest_entity)
             database_session.add(dataset_entity)
@@ -151,6 +170,7 @@ class Application(AsynchronousApplication):
         harvester0 = NASAHarvester(
             self._engine,
             self.__sender,
+            self._logger,
             # pylint: disable=line-too-long
             "https://firms.modaps.eosdis.nasa.gov/data/active_fire/modis-c6.1/csv/MODIS_C6_1_Global_24h.csv",
         )
@@ -158,6 +178,7 @@ class Application(AsynchronousApplication):
         harvester1 = NASAHarvester(
             self._engine,
             self.__sender,
+            self._logger,
             # pylint: disable=line-too-long
             "https://firms.modaps.eosdis.nasa.gov/data/active_fire/suomi-npp-viirs-c2/csv/SUOMI_VIIRS_C2_Global_24h.csv",
         )
@@ -165,6 +186,7 @@ class Application(AsynchronousApplication):
         harvester2 = NASAHarvester(
             self._engine,
             self.__sender,
+            self._logger,
             # pylint: disable=line-too-long
             "https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_Global_24h.csv",
         )

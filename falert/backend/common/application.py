@@ -1,4 +1,6 @@
 from asyncio import run
+from logging import Logger, getLogger, DEBUG, basicConfig
+
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
 from falert.backend.common.configuration import Configuration, load_from_environment
@@ -13,6 +15,10 @@ class BaseApplication:
             echo=self.__configuration.database_echo,
         )
 
+        self.__logger = getLogger(None)
+        basicConfig()
+        self.__logger.setLevel(DEBUG)
+
     @property
     def _configuration(self) -> Configuration:
         return self.__configuration
@@ -20,6 +26,10 @@ class BaseApplication:
     @property
     def _engine(self) -> AsyncEngine:
         return self.__engine
+
+    @property
+    def _logger(self) -> Logger:
+        return self.__logger
 
 
 class AsynchronousApplication(BaseApplication):
