@@ -102,6 +102,16 @@
             updatePolygons();
         }
     });
+
+    const updateCenter = (longitude, latitude) => {
+        if (map === null) {
+            return;
+        }
+
+        map.panTo({ lat: latitude, lon: longitude });
+    };
+
+    $: updateCenter(longitude, latitude);
 </script>
 
 <div id="map" />
