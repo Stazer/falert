@@ -10,7 +10,7 @@ class BaseApplication:
 
         self.__engine = create_async_engine(
             self.__configuration.database_url,
-            echo=True,
+            echo=self.__configuration.database_echo,
         )
 
     @property
