@@ -77,7 +77,7 @@ class Application(AsynchronousApplication):
             else:
                 self._logger.info(
                     "Fetch all fire locations from dataset harvests with ids %s",
-                    ",".join(dataset_harvest_ids),
+                    ', '.join(map(lambda x: str(x), dataset_harvest_ids)),
                 )
 
                 fire_location_entities = list(
@@ -113,7 +113,7 @@ class Application(AsynchronousApplication):
             else:
                 self._logger.info(
                     "Fetch all subscriptions with ids %s",
-                    ','.join(subscription_ids),
+                    ', '.join(map(lambda x: str(x), subscription_ids)),
                 )
 
                 subscription_entities = list(
@@ -186,7 +186,7 @@ class Application(AsynchronousApplication):
 
                 if len(subscription_match_entity.subscription_match_fire_locations) > 0:
                     self._logger.info(
-                        "Subscription %s has a match with %s new fire locations",
+                        "Subscription %s has a match with %s new fire location(s)",
                         subscription_entity.id,
                         len(
                             subscription_match_entity.subscription_match_fire_locations
