@@ -33,6 +33,7 @@ rich==10.15.2
 sanic==21.9.3
 sanic-ext==22.1.2
 sanic-routing==0.7.2
+Shapely==1.8.1.post1
 SQLAlchemy==1.4.27
 sqlalchemy2-stubs==0.0.2a19
 toml==0.10.2
