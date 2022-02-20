@@ -90,7 +90,7 @@ class SubscriptionVertexEntity(BaseEntity):
 class SubscriptionMatchEntity(BaseEntity):
     __tablename__ = "subscription_matches"
 
-    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    id: UUID = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
 
     subscription_id: UUID = Column(UUID(as_uuid=False), ForeignKey("subscriptions.id"))
     subscription: "SubscriptionEntity" = relationship(
@@ -178,11 +178,7 @@ class DatasetHarvestEntity(BaseEntity):
 class FireLocationEntity(BaseEntity):
     __tablename__ = "fire_locations"
 
-    id: UUID = Column(
-        UUID(as_uuid=False),
-        primary_key=True,
-        default=uuid.uuid4,
-    )
+    id: UUID = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
 
     dataset_harvest_id: UUID = Column(
         UUID(as_uuid=False), ForeignKey("dataset_harvests.id")

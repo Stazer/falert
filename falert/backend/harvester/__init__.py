@@ -8,6 +8,10 @@ from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 from sqlalchemy.orm import sessionmaker, joinedload
 
 from falert.backend.common.application import AsynchronousApplication
+from falert.backend.common.output import (
+    TriggerMatchingOutput,
+    TriggerMatchingOutputSchema,
+)
 from falert.backend.common.entity import (
     BaseEntity,
     DatasetEntity,
@@ -15,7 +19,7 @@ from falert.backend.common.entity import (
     DatasetHarvestEntity,
 )
 from falert.backend.common.input import NASAFireLocationInputSchema
-from falert.backend.common.messenger import AsyncpgSender
+from falert.backend.common.messenger import AsyncpgSender, Sender
 
 
 class BaseHarvester:
@@ -23,10 +27,13 @@ class BaseHarvester:
 
 
 class NASAHarvester(BaseHarvester):
-    def __init__(self, engine: AsyncEngine, url: str, chunk_size: int = 8192):
+    def __init__(
+        self, engine: AsyncEngine, sender: Sender, url: str, chunk_size: int = 8192
+    ):
         super().__init__()
 
         self.__engine = engine
+        self.__sender = sender
         self.__url = url
         self.__chunk_size = chunk_size
 
@@ -113,37 +120,51 @@ class NASAHarvester(BaseHarvester):
             database_session.add(dataset_entity)
             await database_session.commit()
 
+            trigger_matching_output = TriggerMatchingOutput(
+                dataset_harvest_ids=[
+                    dataset_harvest_entity.id,
+                ],
+            )
+
+            await self.__sender.send(
+                "trigger_matching",
+                TriggerMatchingOutputSchema().dumps(
+                    trigger_matching_output,
+                ),
+            )
+
 
 class Application(AsynchronousApplication):
     def __init__(self):
         super().__init__()
 
-        # pylint: disable=unused-private-member
         self.__sender = None
 
     async def main(self):
         async with self._engine.begin() as connection:
             raw_connection = await connection.get_raw_connection()
 
-            # pylint: disable=unused-private-member
             self.__sender = AsyncpgSender(
                 raw_connection.dbapi_connection.driver_connection
             )
 
         harvester0 = NASAHarvester(
             self._engine,
+            self.__sender,
             # pylint: disable=line-too-long
             "https://firms.modaps.eosdis.nasa.gov/data/active_fire/modis-c6.1/csv/MODIS_C6_1_Global_24h.csv",
         )
 
         harvester1 = NASAHarvester(
             self._engine,
+            self.__sender,
             # pylint: disable=line-too-long
             "https://firms.modaps.eosdis.nasa.gov/data/active_fire/suomi-npp-viirs-c2/csv/SUOMI_VIIRS_C2_Global_24h.csv",
         )
 
         harvester2 = NASAHarvester(
             self._engine,
+            self.__sender,
             # pylint: disable=line-too-long
             "https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_Global_24h.csv",
         )

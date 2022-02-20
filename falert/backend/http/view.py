@@ -1,10 +1,16 @@
+from asyncio import create_task
 from json import loads
+from uuid import UUID
 
 from sanic.views import HTTPMethodView
 from sanic.request import Request
 from sanic.response import text, HTTPResponse, empty
 
 from falert.backend.common.input import SubscriptionInputSchema
+from falert.backend.common.output import (
+    TriggerMatchingOutput,
+    TriggerMatchingOutputSchema,
+)
 from falert.backend.common.entity import SubscriptionEntity, SubscriptionVertexEntity
 
 
@@ -33,7 +39,23 @@ class SubscriptionCreateView(BaseView):
             )
 
         request.ctx.database_session.add(subscription_entity)
-
         await request.ctx.database_session.commit()
+
+        trigger_matching_output = TriggerMatchingOutput(
+            subscription_ids=[
+                UUID(
+                    str(subscription_entity.id)
+                ),  # properly satisfy the type checker here
+            ],
+        )
+
+        create_task(
+            request.ctx.sender.send(
+                "trigger_matching",
+                TriggerMatchingOutputSchema().dumps(
+                    trigger_matching_output,
+                ),
+            )
+        )
 
         return empty(status=201)

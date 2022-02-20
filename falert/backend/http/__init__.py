@@ -2,11 +2,13 @@ from sanic import Sanic
 from sanic.response import HTTPResponse
 from sanic_ext import Extend
 
+from falert.backend.common.messenger import AsyncpgSender
 from falert.backend.common.application import BaseApplication
 from falert.backend.http.view import PingView, SubscriptionCreateView
 from falert.backend.http.middleware import (
     AttachDatabaseMiddleware,
     DetachDatabaseMiddleware,
+    AttachSenderMiddleware,
 )
 from falert.backend.common.entity import BaseEntity
 
@@ -20,8 +22,22 @@ class Application(BaseApplication):
         async with self._engine.begin() as connection:
             await connection.run_sync(BaseEntity.metadata.create_all)
 
+            raw_connection = await connection.get_raw_connection()
+
+            # pylint: disable=unused-private-member
+            self.__sender = AsyncpgSender(
+                raw_connection.dbapi_connection.driver_connection
+            )
+
+            self.__sanic.register_middleware(
+                AttachSenderMiddleware(self.__sender),
+                "request",
+            )
+
     def __init__(self) -> None:
         super().__init__()
+
+        self.__sender = None
 
         self.__sanic = Sanic(
             name="falert-backend-http",
