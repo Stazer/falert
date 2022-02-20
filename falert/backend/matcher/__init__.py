@@ -76,8 +76,8 @@ class Application(AsynchronousApplication):
                 )
             else:
                 self._logger.info(
-                    # pylint: disable=line-too-long
-                    "Fetch all fire locations from dataset harvests with id {','.join(dataset_harvest_ids)}"
+                    "Fetch all fire locations from dataset harvests with ids %s",
+                    ",".join(dataset_harvest_ids),
                 )
 
                 fire_location_entities = list(
@@ -112,7 +112,8 @@ class Application(AsynchronousApplication):
                 )
             else:
                 self._logger.info(
-                    "Fetch all subscriptions with id {','.join(subscription_ids)}"
+                    "Fetch all subscriptions with ids %s",
+                    ','.join(subscription_ids),
                 )
 
                 subscription_entities = list(
