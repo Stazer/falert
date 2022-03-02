@@ -8,8 +8,12 @@ from sqlalchemy import select
 from shapely.geometry import Point, Polygon
 
 from falert.backend.common.input import TriggerMatchingInputSchema
+from falert.backend.common.output import (
+    TriggerNotifyingOutput,
+    TriggerNotifyingOutputSchema,
+)
 from falert.backend.common.application import AsynchronousApplication
-from falert.backend.common.messenger import AsyncpgReceiver
+from falert.backend.common.messenger import AsyncpgReceiver, AsyncpgSender
 from falert.backend.common.entity import (
     SubscriptionEntity,
     SubscriptionMatchEntity,
@@ -22,15 +26,18 @@ class Application(AsynchronousApplication):
     def __init__(self):
         super().__init__()
 
-        # pylint: disable=unused-private-member
         self.__receiver = None
+        self.__sender = None
 
     async def main(self):
         async with self._engine.begin() as connection:
             raw_connection = await connection.get_raw_connection()
 
-            # pylint: disable=unused-private-member
             self.__receiver = AsyncpgReceiver(
+                raw_connection.dbapi_connection.driver_connection
+            )
+
+            self.__sender = AsyncpgSender(
                 raw_connection.dbapi_connection.driver_connection
             )
 
@@ -46,6 +53,7 @@ class Application(AsynchronousApplication):
                     trigger_matching_input.dataset_harvest_ids,
                 )
 
+    # pylint: disable=too-many-locals
     async def __handle_matching(
         self,
         subscription_ids: Optional[List[UUID]],
@@ -141,6 +149,8 @@ class Application(AsynchronousApplication):
             len(fire_location_entities),
         )
 
+        subscription_match_ids = []
+
         for (subscription_entity,) in subscription_entities:
             async with session_maker() as database_session:
                 polygon = Polygon(
@@ -193,7 +203,23 @@ class Application(AsynchronousApplication):
                         ),
                     )
 
-                database_session.add(subscription_entity)
-                await database_session.commit()
+                    database_session.add(subscription_entity)
+                    await database_session.commit()
+
+                    subscription_match_ids.append(
+                        subscription_match_entity.id,
+                    )
+
+        if len(subscription_match_ids) > 0:
+            trigger_notifying_output = TriggerNotifyingOutput(
+                subscription_match_ids,
+            )
+
+            await self.__sender.send(
+                "trigger_notifying",
+                TriggerNotifyingOutputSchema().dumps(
+                    trigger_notifying_output,
+                ),
+            )
 
         self._logger.info("Finish matching")

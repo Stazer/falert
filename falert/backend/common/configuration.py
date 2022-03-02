@@ -7,9 +7,22 @@ from dotenv import load_dotenv
 
 
 class Configuration:
-    def __init__(self, database_url: str, database_echo: bool) -> None:
+    # pylint: disable=too-many-arguments
+    def __init__(
+        self,
+        database_url: str,
+        database_echo: bool,
+        aws_access_key_id: str,
+        aws_secret_access_key: str,
+        aws_region_name: str,
+        dry: bool,
+    ) -> None:
         self.__database_url = database_url
         self.__database_echo = database_echo
+        self.__aws_access_key_id = aws_access_key_id
+        self.__aws_secret_access_key = aws_secret_access_key
+        self.__aws_region_name = aws_region_name
+        self.__dry = dry
 
     @property
     def database_url(self) -> str:
@@ -19,10 +32,30 @@ class Configuration:
     def database_echo(self) -> bool:
         return self.__database_echo
 
+    @property
+    def aws_access_key_id(self) -> str:
+        return self.__aws_access_key_id
+
+    @property
+    def aws_secret_access_key(self) -> str:
+        return self.__aws_secret_access_key
+
+    @property
+    def aws_region_name(self) -> str:
+        return self.__aws_region_name
+
+    @property
+    def dry(self) -> bool:
+        return self.__dry
+
 
 class ConfigurationSchema(Schema):
     database_url = String(required=True)
     database_echo = Boolean(allow_none=True, load_default=False)
+    aws_access_key_id = String(required=True)
+    aws_secret_access_key = String(required=True)
+    aws_region_name = String(required=True)
+    dry = Boolean(allow_none=True, load_default=True)
 
     # pylint: disable=no-self-use
     @post_load

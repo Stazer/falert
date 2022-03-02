@@ -216,3 +216,28 @@ class TriggerMatchingInputSchema(Schema):
         self, values: Mapping[str, Any], **_kwargs
     ) -> TriggerMatchingInput:
         return TriggerMatchingInput(**values)
+
+
+class TriggerNotifyingInput(BaseInput):
+    def __init__(
+        self,
+        subscription_match_ids: Optional[List[UUID]],
+    ):
+        super().__init__()
+
+        self.__subscription_match_ids = subscription_match_ids
+
+    @property
+    def subscription_match_ids(self) -> Optional[List[UUID]]:
+        return self.__subscription_match_ids
+
+
+class TriggerNotifyingInputSchema(Schema):
+    subscription_match_ids = fields.List(fields.UUID(), allow_none=True)
+
+    # pylint: disable=no-self-use
+    @post_load
+    def _on_post_load(
+        self, values: Mapping[str, Any], **_kwargs
+    ) -> TriggerNotifyingInput:
+        return TriggerNotifyingInput(**values)

@@ -66,6 +66,28 @@ class SubscriptionEntity(BaseEntity):
         back_populates="subscription",
     )
 
+    subscription_notifications: List["SubscriptionNotificationEntity"] = relationship(
+        "SubscriptionNotificationEntity",
+        back_populates="subscription",
+    )
+
+    created = Column(DateTime, server_default=func.now(), nullable=False)
+    updated = Column(
+        DateTime, server_default=func.now(), onupdate=func.now(), nullable=False
+    )
+
+
+class SubscriptionNotificationEntity(BaseEntity):
+    __tablename__ = "subscription_notifications"
+
+    id: UUID = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+
+    subscription_id: UUID = Column(UUID(as_uuid=False), ForeignKey("subscriptions.id"))
+    subscription: "SubscriptionEntity" = relationship(
+        "SubscriptionEntity",
+        back_populates="subscription_notifications",
+    )
+
     created = Column(DateTime, server_default=func.now(), nullable=False)
     updated = Column(
         DateTime, server_default=func.now(), onupdate=func.now(), nullable=False

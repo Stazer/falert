@@ -38,3 +38,28 @@ class TriggerMatchingOutputSchema(Schema):
         self, values: Mapping[str, Any], **_kwargs
     ) -> TriggerMatchingOutput:
         return TriggerMatchingOutput(**values)
+
+
+class TriggerNotifyingOutput(BaseOutput):
+    def __init__(
+        self,
+        subscription_match_ids: Optional[List[UUID]],
+    ):
+        super().__init__()
+
+        self.__subscription_match_ids = subscription_match_ids
+
+    @property
+    def subscription_match_ids(self) -> Optional[List[UUID]]:
+        return self.__subscription_match_ids
+
+
+class TriggerNotifyingOutputSchema(Schema):
+    subscription_match_ids = fields.List(fields.UUID(), allow_none=True)
+
+    # pylint: disable=no-self-use
+    @post_load
+    def _on_post_load(
+        self, values: Mapping[str, Any], **_kwargs
+    ) -> TriggerNotifyingOutput:
+        return TriggerNotifyingOutput(**values)
