@@ -38,10 +38,17 @@ class SubscriptionVertexInputSchema(Schema):
 
 
 class SubscriptionInput(BaseInput):
-    def __init__(self, vertices: List["SubscriptionVertexInput"]) -> None:
+    def __init__(
+        self, phone_number: str, vertices: List["SubscriptionVertexInput"]
+    ) -> None:
         super().__init__()
 
+        self.__phone_number = phone_number
         self.__vertices = vertices
+
+    @property
+    def phone_number(self) -> str:
+        return self.__phone_number
 
     @property
     def vertices(self) -> List["SubscriptionVertexInput"]:
@@ -49,6 +56,7 @@ class SubscriptionInput(BaseInput):
 
 
 class SubscriptionInputSchema(Schema):
+    phone_number = fields.String(required=True)
     vertices = fields.List(fields.Nested(SubscriptionVertexInputSchema, required=True))
 
     # pylint: disable=no-self-use

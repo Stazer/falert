@@ -14,6 +14,7 @@
         longitude: null,
         latitude: null,
     };
+    let phoneNumber = null;
 
     const onClickCancel = () => {
         sidebarViewKey = null;
@@ -22,6 +23,7 @@
 
     const onClickCreateSubscription = () => {
         sidebarViewKey = createSubscriptionSidebarViewKey;
+        phoneNumber = null;
         selectedVertices = [];
     };
 
@@ -61,6 +63,7 @@
             method: 'POST',
             body: JSON.stringify({
                 vertices: selectedVertices,
+                phone_number: phoneNumber,
             }),
         }).then(() => {
             selectedVertices = [];
@@ -96,6 +99,12 @@
                         {/each}
                     </ul>
                 {/if}
+                <input
+                    type="text"
+                    bind:value={phoneNumber}
+                    placeholder="Phone Number"
+                    class="input w-full max-w-xs"
+                />
                 <div class="flex justify-center py-4">
                     <div class="btn btn-ghost" on:click={onClickSubmitCreateSubscription}>
                         Submit

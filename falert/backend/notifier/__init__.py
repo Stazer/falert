@@ -149,17 +149,30 @@ class Application(AsynchronousApplication):
         )
 
         for (subscription_entity,) in subscription_entities:
-            async with session_maker() as database_session:
-                self._logger.info(
-                    "Notify subscription id %s",
+            self._logger.info(
+                "Notify subscription id %s",
+                subscription_entity.id,
+            )
+
+            try:
+                async with session_maker() as database_session:
+                    self.__sns_client.publish(
+                        PhoneNumber=subscription_entity.phone_number,
+                        Message="There have been detected several fire locations",
+                    )
+
+                    subscription_entity.subscription_notifications.append(
+                        SubscriptionNotificationEntity()
+                    )
+
+                    database_session.add(subscription_entity)
+                    await database_session.commit()
+            # pylint: disable=broad-except
+            except BaseException as error:
+                self._logger.error(
+                    "Error notifying subscription %s (%s)",
                     subscription_entity.id,
+                    error,
                 )
-
-                subscription_entity.subscription_notifications.append(
-                    SubscriptionNotificationEntity()
-                )
-
-                database_session.add(subscription_entity)
-                await database_session.commit()
 
         self._logger.info("Finish notifying")

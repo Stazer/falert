@@ -38,6 +38,8 @@ class SubscriptionCreateView(BaseView):
                 )
             )
 
+        subscription_entity.phone_number = subscription_input.phone_number
+
         request.ctx.database_session.add(subscription_entity)
         await request.ctx.database_session.commit()
 

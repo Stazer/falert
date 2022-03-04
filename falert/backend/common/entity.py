@@ -71,6 +71,8 @@ class SubscriptionEntity(BaseEntity):
         back_populates="subscription",
     )
 
+    phone_number = Column(Text, nullable=False)
+
     created = Column(DateTime, server_default=func.now(), nullable=False)
     updated = Column(
         DateTime, server_default=func.now(), onupdate=func.now(), nullable=False
