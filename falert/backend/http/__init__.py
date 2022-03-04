@@ -65,5 +65,9 @@ class Application(BaseApplication):
         self.__sanic.add_route(PingView.as_view(), "/ping")
         self.__sanic.add_route(SubscriptionCreateView.as_view(), "/subscriptions")
 
+        self.__sanic.static("/", "./build/index.html")
+        self.__sanic.static("/_app", "./build/_app")
+        self.__sanic.static("/favicon.png", "./build/favicon.png")
+
     def main(self):
         self.__sanic.run()
