@@ -11,7 +11,7 @@
     };
 
     onMount(() => {
-        fetch('http://localhost:8000/statistics')
+        fetch('/statistics')
             .then((response) => response.json())
             .then((json) => {
                 data = json;

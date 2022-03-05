@@ -12,7 +12,7 @@
     };
 
     const onClickSubmit = () => {
-        fetch('http://localhost:8000/subscriptions', {
+        fetch('/subscriptions', {
             method: 'POST',
             body: JSON.stringify({
                 vertices,
