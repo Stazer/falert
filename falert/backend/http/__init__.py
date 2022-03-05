@@ -70,4 +70,5 @@ class Application(BaseApplication):
         self.__sanic.static("/favicon.png", "./build/favicon.png")
 
     def main(self):
-        self.__sanic.run()
+        print(self._configuration.http_port)
+        self.__sanic.run(port=self._configuration.http_port)
