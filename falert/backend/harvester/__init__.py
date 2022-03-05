@@ -64,10 +64,10 @@ class NASAHarvester(BaseHarvester):
                 .where(DatasetEntity.url == self.__url)
             )
 
-            dataset_entity = list(result.unique())[0]
+            dataset_entity = list(result.unique())
             reported_fire_locations = {}
 
-            if dataset_entity is None:
+            if dataset_entity is None or len(dataset_entity) == 0:
                 self.__logger.info("Create new dataset")
                 dataset_entity = DatasetEntity(url=self.__url)
             else:
