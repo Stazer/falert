@@ -107,12 +107,14 @@ class StatisticsReadView(BaseView):
             )
         )
 
-        fire_locations = list(map(
-            lambda x: StatisticsReadFireLocationOutput(
-                x[0].acquired, x[0].latitude, x[0].longitude
-            ),
-            fire_location_entities,
-        ))
+        fire_locations = list(
+            map(
+                lambda x: StatisticsReadFireLocationOutput(
+                    x[0].acquired, x[0].latitude, x[0].longitude
+                ),
+                fire_location_entities,
+            )
+        )
 
         statistics_read_output = StatisticsReadOutput(
             fire_locations,
