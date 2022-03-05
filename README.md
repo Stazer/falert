@@ -30,6 +30,12 @@ python3 -m venv .python3-environment
 python3 -m pip install -r requirements.txt
 ```
 
+## Build static files
+
+```
+npm run build
+```
+
 ## Run the applications
 
 ```
