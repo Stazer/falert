@@ -2,141 +2,69 @@
     import Map from '../component/map/map.svelte';
     import MapPolygon from '../component/map/map-polygon.svelte';
     import MapPolygonVertex from '../component/map/map-polygon-vertex.svelte';
+    import CreateSubscription from '../component/create-subscription.svelte';
+    import ReadStatistics from '../component/read-statistics.svelte';
+    import CenterCoordinate from '../component/center-coordinate.svelte';
 
-    const createSubscriptionSidebarViewKey = 'createSubscription';
-    const jumpToSidebarViewKey = 'jumpTo';
-
-    let selectedVertices = [];
-    let sidebarViewKey = null;
-    let longitude = 13.404954;
     let latitude = 52.520008;
-    let jumpToFormValues = {
-        longitude: null,
-        latitude: null,
-    };
-    let phoneNumber = null;
-
-    const onClickCancel = () => {
-        sidebarViewKey = null;
-        selectedVertices = [];
-    };
-
-    const onClickCreateSubscription = () => {
-        sidebarViewKey = createSubscriptionSidebarViewKey;
-        phoneNumber = null;
-        selectedVertices = [];
-    };
-
-    const onClickReset = () => {
-        selectedVertices = [];
-    };
+    let longitude = 13.404954;
+    let vertices = [];
 
     const onClickMap = (event) => {
-        if (sidebarViewKey !== createSubscriptionSidebarViewKey) {
-            return;
-        }
-
-        selectedVertices.push({
+        vertices.push({
             latitude: event.detail.latitude,
             longitude: event.detail.longitude,
         });
 
-        selectedVertices = selectedVertices;
+        vertices = vertices;
     };
 
-    const onClickJumpTo = () => {
-        sidebarViewKey = jumpToSidebarViewKey;
-        jumpToFormValues = {
-            longitude: null,
-            latitude: null,
-        };
+    const onCreateSubscriptionSubmit = () => {
+        vertices = [];
     };
 
-    const onClickSubmitJumpTo = () => {
-        console.log('sad');
-        longitude = jumpToFormValues.longitude;
-        latitude = jumpToFormValues.latitude;
+    const onCreateSubscriptionReset = () => {
+        vertices = [];
     };
 
-    const onClickSubmitCreateSubscription = () => {
-        fetch('http://localhost:8000/subscriptions', {
-            method: 'POST',
-            body: JSON.stringify({
-                vertices: selectedVertices,
-                phone_number: phoneNumber,
-            }),
-        }).then(() => {
-            selectedVertices = [];
-            sidebarViewKey = null;
-        });
+    const onReadStatisticsClick = (event) => {
+        longitude = event.detail.longitude;
+        latitude = event.detail.latitude;
     };
 </script>
 
-<div class="navbar shadow-lg bg-neutral text-neutral-content">
-    <div class="flex-none px-2 mx-2">
-        <span class="text-lg font-bold"> falert </span>
-    </div>
-
-    <div class="flex-1 px-2 mx-2">
-        <button class="btn btn-ghost btn-sm rounded-btn" on:click={onClickCreateSubscription}>
-            Create Subscription
-        </button>
-        <button class="btn btn-ghost btn-sm rounded-btn" on:click={onClickJumpTo}> Jump To </button>
-    </div>
-</div>
-
-<div class="h-full w-full" class:flex={sidebarViewKey !== null}>
-    {#if sidebarViewKey !== null}
-        <div class="basis-1/5 p-4">
-            {#if sidebarViewKey === createSubscriptionSidebarViewKey}
-                {#if selectedVertices.length > 0}
-                    <ul class="menu border bg-base-100 rounded-box">
-                        {#each selectedVertices as vertex}
-                            <li>
-                                <div class="kbd mx-2">{vertex.longitude.toFixed(2)} lng</div>
-                                <div class="kbd mx-2">{vertex.latitude.toFixed(2)} lat</div>
-                            </li>
-                        {/each}
-                    </ul>
-                {/if}
-                <input
-                    type="text"
-                    bind:value={phoneNumber}
-                    placeholder="Phone Number"
-                    class="input w-full max-w-xs"
-                />
-                <div class="flex justify-center py-4">
-                    <div class="btn btn-ghost" on:click={onClickSubmitCreateSubscription}>
-                        Submit
-                    </div>
-                    <div class="btn btn-ghost" on:click={onClickCancel}>Cancel</div>
-                    <div class="btn btn-ghost" on:click={onClickReset}>Reset</div>
+<div class="h-full w-full flex">
+    <div class="basis-1/5 p-4 h-full overflow-y-scroll">
+        <div class="h-full flex flex-col justify-between">
+            <div>
+                <div class="flex-none px-2 mx-2 pb-4">
+                    <span class="text-lg font-bold">falert</span>
                 </div>
-            {/if}
 
-            {#if sidebarViewKey === jumpToSidebarViewKey}
-                <input
-                    type="text"
-                    bind:value={jumpToFormValues.latitude}
-                    placeholder="Latitude"
-                    class="input w-full max-w-xs"
+                <hr />
+
+                <CreateSubscription
+                    {vertices}
+                    on:reset={onCreateSubscriptionReset}
+                    on:submit={onCreateSubscriptionSubmit}
                 />
-                <input
-                    type="text"
-                    bind:value={jumpToFormValues.longitude}
-                    placeholder="Longitude"
-                    class="input w-full max-w-xs"
-                />
-                <div class="btn btn-ghost" on:click={onClickSubmitJumpTo}>Jump To</div>
-                <div class="btn btn-ghost" on:click={onClickCancel}>Cancel</div>
-            {/if}
+
+                <hr />
+
+                <CenterCoordinate bind:longitude bind:latitude />
+            </div>
+            <div>
+                <hr />
+                <ReadStatistics on:click={onReadStatisticsClick} />
+            </div>
         </div>
-    {/if}
+    </div>
+
     <div class="h-full basis-4/5">
-        <Map {latitude} {longitude} on:click={onClickMap}>
-            {#if selectedVertices.length > 0}
-                <MapPolygon color="red">
-                    {#each selectedVertices as vertex}
+        <Map bind:latitude bind:longitude on:click={onClickMap}>
+            {#if vertices.length > 0}
+                <MapPolygon color="cyan">
+                    {#each vertices as vertex}
                         <MapPolygonVertex longitude={vertex.longitude} latitude={vertex.latitude} />
                     {/each}
                 </MapPolygon>

@@ -4,8 +4,8 @@
 
     import { key } from './map-context.js';
 
-    export let longitude;
     export let latitude;
+    export let longitude;
     export let zoom = 13;
 
     const dispatch = createEventDispatcher();
@@ -23,6 +23,7 @@
     };
 
     const deletePolygon = (symbol) => {
+        polygons.get(symbol).handle.removeFrom(map);
         polygons.delete(symbol);
     };
 
@@ -32,9 +33,14 @@
 
     const onClick = (event) => {
         dispatch('click', {
-            longitude: event.latlng.lng,
             latitude: event.latlng.lat,
+            longitude: event.latlng.lng,
         });
+    };
+
+    const onMove = (event) => {
+        latitude = event.target.getCenter().lat;
+        longitude = event.target.getCenter().lng;
     };
 
     const updatePolygons = () => {
@@ -88,6 +94,7 @@
             updatePolygons();
 
             map.on('click', onClick);
+            map.on('move', onMove);
         }
     });
 

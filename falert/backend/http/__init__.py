@@ -4,7 +4,11 @@ from sanic_ext import Extend
 
 from falert.backend.common.messenger import AsyncpgSender
 from falert.backend.common.application import BaseApplication
-from falert.backend.http.view import PingView, SubscriptionCreateView
+from falert.backend.http.view import (
+    PingView,
+    SubscriptionCreateView,
+    StatisticsReadView,
+)
 from falert.backend.http.middleware import (
     AttachDatabaseMiddleware,
     DetachDatabaseMiddleware,
@@ -64,6 +68,7 @@ class Application(BaseApplication):
 
         self.__sanic.add_route(PingView.as_view(), "/ping")
         self.__sanic.add_route(SubscriptionCreateView.as_view(), "/subscriptions")
+        self.__sanic.add_route(StatisticsReadView.as_view(), "/statistics")
 
         self.__sanic.static("/", "./build/index.html")
         self.__sanic.static("/_app", "./build/_app")
