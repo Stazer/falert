@@ -56,6 +56,13 @@
             <div>
                 <hr />
                 <ReadStatistics on:click={onReadStatisticsClick} />
+                <hr />
+                <div class="flex justify-between">
+                    <div>Made with ❤️</div>
+                    <div>
+                        <a href="https://github.com/Stazer/falert">GitHub</a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
