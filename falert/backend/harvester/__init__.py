@@ -71,7 +71,7 @@ class NASAHarvester(BaseHarvester):
                 self.__logger.info("Create new dataset")
                 dataset_entity = DatasetEntity(url=self.__url)
             else:
-                dataset_entity = dataset_entity[0]
+                dataset_entity = dataset_entity[0][0]
 
                 for dataset_harvest_entity in dataset_entity.dataset_harvests:
                     for fire_location in dataset_harvest_entity.fire_locations:
